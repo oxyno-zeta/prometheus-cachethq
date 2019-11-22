@@ -1,0 +1,30 @@
+# Log configuration
+log:
+  # Log level
+  level: info
+  # Log format
+  format: text
+
+# Server configurations
+# server:
+#   listenAddr: ""
+#   port: 8080
+
+# Cachet configuration
+cachet:
+  url: http://localhost
+  apiKey: API_KEY
+
+# Targets
+targets:
+  - component:
+      name: COMPONENT_NAME
+      status: PARTIAL_OUTAGE
+    alerts:
+      - name: SERVICE_OFFLINE
+    # incident:
+    #   name: ""
+    #   content: ""
+    #   status: INVESTIGATING
+    #   public: true
+
