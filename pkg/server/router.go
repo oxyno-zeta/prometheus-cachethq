@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// GenerateRouter Generate main router
 func GenerateRouter(logger *logrus.Logger, cfg *config.Config) (http.Handler, error) {
 	// Set release mod
 	gin.SetMode(gin.ReleaseMode)
