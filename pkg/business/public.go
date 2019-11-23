@@ -1,8 +1,6 @@
 package business
 
 import (
-	"fmt"
-
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/config"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheushook"
 	"github.com/thoas/go-funk"
@@ -38,7 +36,6 @@ func (ctx *Context) ManageHook(promAlertHook *prometheushook.PrometheusAlertHook
 			for _, alert := range promAlertHook.Alerts {
 				if isAlertMatching(matchingLabelsKeys, matchingLabels, alert) {
 					// Alert is matching
-					fmt.Println("Alert is matching %s", alert.Labels[alertNameKey])
 					componentStatus := target.Component.Status
 					if alert.Status == prometheushook.PrometheusStatusResolved {
 						componentStatus = config.ComponentOperationalStatus

@@ -1,7 +1,6 @@
 package cachethq
 
 import (
-	"fmt"
 	"github.com/andygrunwald/cachet"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/config"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/errors"
@@ -56,8 +55,7 @@ func (ctx *Context) CreateIncident(
 		ComponentID:     compo.ID,
 		ComponentStatus: componentStatus,
 	}
-	inciC, _, err := ctx.client.Incidents.Create(inci)
-	fmt.Println(inciC)
+	_, _, err = ctx.client.Incidents.Create(inci)
 	if err != nil {
 		return errors.NewInternalServerError(err)
 	}
