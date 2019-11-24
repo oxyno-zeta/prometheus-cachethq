@@ -58,7 +58,7 @@ func getCachetHQIncidentStatus(statusString string) (int, error) {
 
 func getCachetHQIncidentVisibility(visible bool) int {
 	if visible {
-		return cachet.ComponentGroupVisibilityPublic
+		return cachet.IncidentVisibilityPublic
 	}
-	return cachet.ComponentGroupVisibilityLoggedIn
+	return cachet.IncidentVisibilityLoggedIn
 }
