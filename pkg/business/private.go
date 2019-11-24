@@ -3,6 +3,11 @@ package business
 import "github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheushook"
 
 func isAlertMatching(matchingLabelsKeys []string, matchingLabels map[string]string, alert *prometheushook.PrometheusAlertDetail) bool {
+	// Check if args exists
+	if matchingLabelsKeys == nil || matchingLabels == nil || alert == nil {
+		return false
+	}
+
 	// Check matching labels keys, if length is 0 => stop because cannot be possible
 	if len(matchingLabelsKeys) == 0 {
 		return false
