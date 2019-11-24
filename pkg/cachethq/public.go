@@ -7,7 +7,7 @@ import (
 )
 
 // ChangeComponentStatus Change component status
-func (ctx *Context) ChangeComponentStatus(name string, stringStatus string) error {
+func (ctx *instance) ChangeComponentStatus(name string, stringStatus string) error {
 	// Find component
 	compo, err := ctx.findComponent(name)
 	if err != nil {
@@ -30,7 +30,7 @@ func (ctx *Context) ChangeComponentStatus(name string, stringStatus string) erro
 }
 
 // CreateIncident Create incident
-func (ctx *Context) CreateIncident(
+func (ctx *instance) CreateIncident(
 	componentName string, componentStringStatus string,
 	incident *config.TargetIncident, incidentStringStatus string) error {
 	// Find component

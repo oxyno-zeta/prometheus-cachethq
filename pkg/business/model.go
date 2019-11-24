@@ -8,5 +8,5 @@ import (
 // Context business context
 type Context struct {
 	cfg         *config.Config
-	cachethqCtx *cachethq.Context
+	cachethqCtx cachethq.Instance
 }

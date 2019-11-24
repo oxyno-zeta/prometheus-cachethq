@@ -6,8 +6,14 @@ import (
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/config"
 )
 
-// Context CachetHQ Configuration
-type Context struct {
+// Instance instance interface
+type Instance interface {
+	ChangeComponentStatus(string, string) error
+	CreateIncident(string, string, *config.TargetIncident, string) error
+}
+
+// instance CachetHQ instance
+type instance struct {
 	client    *cachet.Client
 	cachetCfg *config.CachetConfig
 }

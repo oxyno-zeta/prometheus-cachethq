@@ -7,7 +7,7 @@ import (
 
 // NewContext Will generate a new business context
 func NewContext(cfg *config.Config) (*Context, error) {
-	cachethqCtx, err := cachethq.NewContext(cfg)
+	cachethqCtx, err := cachethq.NewInstance(cfg)
 	if err != nil {
 		return nil, err
 	}

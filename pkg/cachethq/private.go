@@ -6,7 +6,7 @@ import (
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/errors"
 )
 
-func (ctx *Context) findComponent(name string) (*cachet.Component, error) {
+func (ctx *instance) findComponent(name string) (*cachet.Component, error) {
 	// Create query params for name filter
 	queryParams := &cachet.ComponentsQueryParams{
 		Name: name,
