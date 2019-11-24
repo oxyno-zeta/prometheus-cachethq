@@ -27,5 +27,4 @@ func handleError(c *gin.Context, err error) {
 		return
 	}
 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	return
 }

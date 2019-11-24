@@ -15,15 +15,18 @@ var validate = validator.New()
 // Load Load configuration
 func Load() (*Config, error) {
 	// Load default configuration
-	k.Load(confmap.Provider(map[string]interface{}{
+	err := k.Load(confmap.Provider(map[string]interface{}{
 		"log.level":           DefaultLogLevel,
 		"log.format":          DefaultLogFormat,
 		"server.port":         DefaultPort,
 		"internalServer.port": DefaultInternalPort,
 	}, "."), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	// Try to load main configuration file
-	err := k.Load(file.Provider(MainConfigPath), yaml.Parser())
+	err = k.Load(file.Provider(MainConfigPath), yaml.Parser())
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +34,10 @@ func Load() (*Config, error) {
 	// Prepare configuration object
 	var out Config
 	// Quick unmarshal.
-	k.Unmarshal("", &out)
+	err = k.Unmarshal("", &out)
+	if err != nil {
+		return nil, err
+	}
 
 	// Configuration validation
 	err = validate.Struct(out)
