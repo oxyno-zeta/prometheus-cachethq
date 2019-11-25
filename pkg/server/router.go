@@ -18,6 +18,7 @@ func GenerateRouter(logger *logrus.Logger, cfg *config.Config) (http.Handler, er
 	router := gin.New()
 	// Add middlewares
 	router.Use(gin.Recovery())
+	router.Use(requestID(logger))
 	router.Use(logMiddleware(logger))
 	// Add routes
 	router.POST("/prometheus/webhook", func(c *gin.Context) {

@@ -32,6 +32,12 @@ func logMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 
 		logFields["uri"] = fmt.Sprintf("%s://%s%s", scheme, r.Host, r.RequestURI)
 
+		requestIDObj, requestIDExists := c.Get(requestIDContextKey)
+		if requestIDExists {
+			// Log request id
+			logFields["request_id"] = requestIDObj.(string)
+		}
+
 		requestLogger := logger.WithFields(logFields)
 
 		requestLogger.Debugln("request started")

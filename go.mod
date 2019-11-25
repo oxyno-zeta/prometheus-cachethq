@@ -12,6 +12,7 @@ require (
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/knadh/koanf v0.5.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 	github.com/sirupsen/logrus v1.4.2
 	github.com/thoas/go-funk v0.4.0
 	golang.org/x/net v0.0.0-20191101175033-0deb6923b6d9 // indirect

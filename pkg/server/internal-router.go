@@ -17,6 +17,7 @@ func GenerateInternalRouter(logger *logrus.Logger, cfg *config.Config) http.Hand
 	router := gin.New()
 	// Add middlewares
 	router.Use(gin.Recovery())
+	router.Use(requestID(logger))
 	router.Use(logMiddleware(logger))
 	// Add routes
 	healthHandler := health.NewHandler()
