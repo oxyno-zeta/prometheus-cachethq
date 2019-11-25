@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/andygrunwald/cachet v0.0.0-20180404195246-2a1ca51087fd
+	github.com/danielkov/gin-helmet v0.0.0-20171108135313-1387e224435e // indirect
 	github.com/dimiro1/health v0.0.0-20191019130555-c5cbb4d46ffc
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-playground/validator/v10 v10.0.0

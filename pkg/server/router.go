@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-gonic/gin"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/business"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/config"
@@ -18,6 +19,7 @@ func GenerateRouter(logger *logrus.Logger, cfg *config.Config) (http.Handler, er
 	router := gin.New()
 	// Add middlewares
 	router.Use(gin.Recovery())
+	router.Use(helmet.Default())
 	router.Use(requestID(logger))
 	router.Use(logMiddleware(logger))
 	// Add routes
