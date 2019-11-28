@@ -7,12 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/business"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/config"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/metrics"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheushook"
 	"github.com/sirupsen/logrus"
 )
 
 // GenerateRouter Generate main router
-func GenerateRouter(logger *logrus.Logger, cfg *config.Config) (http.Handler, error) {
+func GenerateRouter(logger *logrus.Logger, cfg *config.Config, metricsCtx metrics.Instance) (http.Handler, error) {
 	// Set release mod
 	gin.SetMode(gin.ReleaseMode)
 	// Create router
@@ -22,6 +23,7 @@ func GenerateRouter(logger *logrus.Logger, cfg *config.Config) (http.Handler, er
 	router.Use(helmet.Default())
 	router.Use(requestID(logger))
 	router.Use(logMiddleware(logger))
+	router.Use(metricsCtx.Instrument())
 	// Add routes
 	router.POST("/prometheus/webhook", func(c *gin.Context) {
 		var alerts prometheushook.PrometheusAlertHook
@@ -38,7 +40,7 @@ func GenerateRouter(logger *logrus.Logger, cfg *config.Config) (http.Handler, er
 			handleError(c, err)
 			return
 		}
-		businessCtx, err := business.NewContext(cfg)
+		businessCtx, err := business.NewContext(cfg, metricsCtx)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

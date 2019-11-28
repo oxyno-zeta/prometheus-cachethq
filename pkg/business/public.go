@@ -49,11 +49,13 @@ func (ctx *Context) ManageHook(promAlertHook *prometheushook.PrometheusAlertHook
 						if err != nil {
 							return err
 						}
+						ctx.metricsCtx.IncrementIncidentManagedCounter(incidentStatus, componentStatus)
 					} else {
 						err := ctx.cachethqCtx.ChangeComponentStatus(target.Component.Name, componentStatus)
 						if err != nil {
 							return err
 						}
+						ctx.metricsCtx.IncrementComponentManagedCounter(componentStatus)
 					}
 				}
 			}
