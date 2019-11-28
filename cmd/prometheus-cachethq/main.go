@@ -36,7 +36,7 @@ func main() {
 
 	// Getting version
 	v := version.GetVersion()
-	logger.Infof("Starting s3-proxy version: %s (git commit: %s) built on %s", v.Version, v.GitCommit, v.BuildDate)
+	logger.Infof("Starting prometheus-cachethq version: %s (git commit: %s) built on %s", v.Version, v.GitCommit, v.BuildDate)
 
 	// Listen
 	go internalServe(logger, cfg)
