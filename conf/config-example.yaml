@@ -10,6 +10,11 @@ log:
 #   listenAddr: ""
 #   port: 8080
 
+# Internal Server configurations
+# internalServer:
+#   listenAddr: ""
+#   port: 9090
+
 # Cachet configuration
 cachet:
   url: http://localhost

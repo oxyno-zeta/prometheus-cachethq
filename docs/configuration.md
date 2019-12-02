@@ -7,12 +7,13 @@ You can see a full example in the [Example section](#example)
 
 ## Main structure
 
-| Key     | Type                                          | Required | Default | Description             |
-| ------- | --------------------------------------------- | -------- | ------- | ----------------------- |
-| log     | [LogConfiguration](#logconfiguration)         | No       | None    | Log configurations      |
-| server  | [ServerConfiguration](#serverconfiguration)   | No       | None    | Server configurations   |
-| cachet  | [CachetConfiguration](#cachetconfiguration)   | Yes      | None    | CachetHQ configurations |
-| targets | [[TargetConfiguration]](#targetconfiguration) | Yes      | None    | Targets configurations  |
+| Key            | Type                                          | Required | Default | Description                    |
+| -------------- | --------------------------------------------- | -------- | ------- | ------------------------------ |
+| log            | [LogConfiguration](#logconfiguration)         | No       | None    | Log configurations             |
+| server         | [ServerConfiguration](#serverconfiguration)   | No       | None    | Server configurations          |
+| internalServer | [ServerConfiguration](#serverconfiguration)   | No       | None    | Internal Server configurations |
+| cachet         | [CachetConfiguration](#cachetconfiguration)   | Yes      | None    | CachetHQ configurations        |
+| targets        | [[TargetConfiguration]](#targetconfiguration) | Yes      | None    | Targets configurations         |
 
 ## LogConfiguration
 
