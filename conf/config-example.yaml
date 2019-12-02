@@ -22,6 +22,8 @@ targets:
       status: PARTIAL_OUTAGE
     alerts:
       - name: SERVICE_OFFLINE
+    #   - labels:
+    #       label1: value1
     # incident:
     #   name: ""
     #   content: ""
