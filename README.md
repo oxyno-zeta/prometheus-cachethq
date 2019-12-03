@@ -63,7 +63,9 @@ See configuration values [here](./docs/configuration.md)
 
 #### Kubernetes - Helm
 
-TODO
+A helm chart have been created to deploy this in a Kubernetes cluster.
+
+You can find it here: [https://github.com/oxyno-zeta/helm-charts/tree/master/stable/prometheus-cachethq](https://github.com/oxyno-zeta/helm-charts/tree/master/stable/prometheus-cachethq)
 
 #### Docker
 
