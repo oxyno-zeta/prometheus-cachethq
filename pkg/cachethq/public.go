@@ -7,9 +7,9 @@ import (
 )
 
 // ChangeComponentStatus Change component status
-func (ctx *instance) ChangeComponentStatus(name string, stringStatus string) error {
+func (ctx *instance) ChangeComponentStatus(name string, groupName string, stringStatus string) error {
 	// Find component
-	compo, err := ctx.findComponent(name)
+	compo, err := ctx.findComponent(name, groupName)
 	if err != nil {
 		return err
 	}
@@ -31,10 +31,10 @@ func (ctx *instance) ChangeComponentStatus(name string, stringStatus string) err
 
 // CreateIncident Create incident
 func (ctx *instance) CreateIncident(
-	componentName string, componentStringStatus string,
+	componentName string, componentGroupName string, componentStringStatus string,
 	incident *config.TargetIncident, incidentStringStatus string) error {
 	// Find component
-	compo, err := ctx.findComponent(componentName)
+	compo, err := ctx.findComponent(componentName, componentGroupName)
 	if err != nil {
 		return err
 	}

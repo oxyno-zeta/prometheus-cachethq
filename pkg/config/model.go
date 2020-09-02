@@ -65,8 +65,9 @@ type TargetAlerts struct {
 
 // TargetComponent Target component
 type TargetComponent struct {
-	Name   string `koanf:"name" validate:"required"`
-	Status string `koanf:"status" validate:"required,oneof=OPERATIONAL PERFORMANCE_ISSUES PARTIAL_OUTAGE MAJOR_OUTAGE"`
+	Name      string `koanf:"name" validate:"required"`
+	GroupName string `koanf:"groupName"`
+	Status    string `koanf:"status" validate:"required,oneof=OPERATIONAL PERFORMANCE_ISSUES PARTIAL_OUTAGE MAJOR_OUTAGE"`
 }
 
 const (

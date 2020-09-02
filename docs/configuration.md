@@ -46,10 +46,11 @@ You can see a full example in the [Example section](#example)
 
 ## TargetComponentConfiguration
 
-| Key    | Type   | Required | Default | Description                                                                                 |
-| ------ | ------ | -------- | ------- | ------------------------------------------------------------------------------------------- |
-| name   | String | Yes      | None    | CachetHQ Component name                                                                     |
-| status | String | Yes      | None    | CachetHQ Component status (OPERATIONAL, PERFORMANCE_ISSUES, PARTIAL_OUTAGE or MAJOR_OUTAGE) |
+| Key       | Type   | Required | Default | Description                                                                                                                                        |
+| --------- | ------ | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name      | String | Yes      | None    | CachetHQ Component name                                                                                                                            |
+| groupName | String | No       | None    | CachetHQ Component group name in which the component is. This is useful when you have multiple components with the same name into multiple groups. |
+| status    | String | Yes      | None    | CachetHQ Component status (OPERATIONAL, PERFORMANCE_ISSUES, PARTIAL_OUTAGE or MAJOR_OUTAGE)                                                        |
 
 ## TargetAlertConfiguration
 
