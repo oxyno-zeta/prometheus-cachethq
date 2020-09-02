@@ -51,7 +51,6 @@ func GenerateRouter(logger *logrus.Logger, cfg *config.Config, metricsCtx metric
 			return
 		}
 		c.Status(http.StatusNoContent)
-		// c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
 	return router, nil
 }
