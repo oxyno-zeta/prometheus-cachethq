@@ -15,12 +15,12 @@ type testCachetInstance struct {
 	err error
 }
 
-func (tci *testCachetInstance) ChangeComponentStatus(name string, stringStatus string) error {
+func (tci *testCachetInstance) ChangeComponentStatus(name string, groupName string, stringStatus string) error {
 	return tci.err
 }
 
 func (tci *testCachetInstance) CreateIncident(
-	componentName string, componentStringStatus string,
+	componentName string, componentGroupName string, componentStringStatus string,
 	incident *config.TargetIncident, incidentStringStatus string) error {
 	return tci.err
 }

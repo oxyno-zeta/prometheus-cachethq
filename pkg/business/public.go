@@ -45,13 +45,13 @@ func (ctx *Context) ManageHook(promAlertHook *prometheushook.PrometheusAlertHook
 						if alert.Status == prometheushook.PrometheusStatusResolved {
 							incidentStatus = config.IncidentFixedStatus
 						}
-						err := ctx.cachethqCtx.CreateIncident(target.Component.Name, componentStatus, target.Incident, incidentStatus)
+						err := ctx.cachethqCtx.CreateIncident(target.Component.Name, target.Component.GroupName, componentStatus, target.Incident, incidentStatus)
 						if err != nil {
 							return err
 						}
 						ctx.metricsCtx.IncrementIncidentManagedCounter(incidentStatus, componentStatus)
 					} else {
-						err := ctx.cachethqCtx.ChangeComponentStatus(target.Component.Name, componentStatus)
+						err := ctx.cachethqCtx.ChangeComponentStatus(target.Component.Name, target.Component.GroupName, componentStatus)
 						if err != nil {
 							return err
 						}

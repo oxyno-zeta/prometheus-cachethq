@@ -24,6 +24,7 @@ cachet:
 targets:
   - component:
       name: COMPONENT_NAME
+      # groupName: GROUP_NAME
       status: PARTIAL_OUTAGE
     alerts:
       - name: SERVICE_OFFLINE
