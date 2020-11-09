@@ -8,6 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const requestLoggerContextKey = "RequestLogger"
+
 func logMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t1 := time.Now()
@@ -41,6 +43,8 @@ func logMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 		requestLogger := logger.WithFields(logFields)
 
 		requestLogger.Debugln("request started")
+
+		c.Set(requestLoggerContextKey, requestLogger)
 
 		// Next
 		c.Next()

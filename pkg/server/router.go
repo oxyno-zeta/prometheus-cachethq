@@ -26,27 +26,36 @@ func GenerateRouter(logger *logrus.Logger, cfg *config.Config, metricsCtx metric
 	router.Use(metricsCtx.Instrument())
 	// Add routes
 	router.POST("/prometheus/webhook", func(c *gin.Context) {
+		// Get logger from request
+		reqLoggerInt, _ := c.Get(requestLoggerContextKey)
+		// Cast it
+		reqLogger := reqLoggerInt.(*logrus.Entry)
+
 		var alerts prometheushook.PrometheusAlertHook
 		// Try to map data
 		err := c.ShouldBindJSON(&alerts)
 		// Check if error exists
 		if err != nil {
+			reqLogger.Error(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		// Validate input
 		err = alerts.Validate()
 		if err != nil {
+			reqLogger.Error(err)
 			handleError(c, err)
 			return
 		}
 		businessCtx, err := business.NewContext(cfg, metricsCtx)
 		if err != nil {
+			reqLogger.Error(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		err = businessCtx.ManageHook(&alerts)
 		if err != nil {
+			reqLogger.Error(err)
 			handleError(c, err)
 			return
 		}
