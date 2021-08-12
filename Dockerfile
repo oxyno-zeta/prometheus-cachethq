@@ -1,7 +1,20 @@
-FROM alpine:3.9
+FROM alpine:3.12
 
-RUN apk add --update ca-certificates && rm -rf /var/cache/apk/*
+ENV USER=appuser
+ENV APP=prometheus-cachethq
+ENV UID=1000
+ENV GID=1000
 
-COPY prometheus-cachethq /prometheus-cachethq
+RUN apk add --update ca-certificates && rm -rf /var/cache/apk/* && \
+    addgroup -g $GID $USER && \
+    adduser -D -g "" -h "/$USER" -G "$USER" -H -u "$UID" "$USER"
 
-ENTRYPOINT [ "/prometheus-cachethq" ]
+WORKDIR /$USER
+
+COPY $APP /$USER/$APP
+
+RUN chown -R $UID:$GID /$USER
+
+USER $USER
+
+ENTRYPOINT [ "/appuser/prometheus-cachethq" ]

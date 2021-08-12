@@ -3,20 +3,20 @@
 project_name: prometheus-cachethq
 before:
   hooks:
-    - make clean
-    - make dep
-env:
-  - GO111MODULE=on
+    - make code/clean
+    - make setup/dep/install
 builds:
   - main: ./cmd/prometheus-cachethq
     binary: prometheus-cachethq
+    # flags:
+    #   - -mod=vendor
     ldflags:
       - -extldflags "-static"
-      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/version.Version={{ .Tag }}
-      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/version.GitCommit={{ .ShortCommit }}
-      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/version.BuildDate={{ .Date }}
+      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version.Version={{ .Tag }}
+      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version.GitCommit={{ .ShortCommit }}
+      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version.BuildDate={{ .Date }}
       # Clear the "unreleased" string in Metadata
-      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/version.Metadata=
+      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version.Metadata=
     env:
       - CGO_ENABLED=0
     goarch:
@@ -30,11 +30,16 @@ builds:
       - 6
       - 7
     goos:
+      - windows
+      - darwin
       - linux
+    ignore:
+      - goos: darwin
+        goarch: 386
 archives:
-  - files:
-      - LICENSE
-      - README.md
+  - format_overrides:
+      - goos: windows
+        format: zip
 checksum:
   name_template: "checksums.txt"
 snapshot:
@@ -65,6 +70,8 @@ dockers:
     build_flag_templates:
       - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
       - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
+    extra_files:
+      - templates/
   # Disabled because can't build arm on release laptop
   # - goos: linux
   #   goarch: arm
@@ -81,6 +88,8 @@ dockers:
   #   build_flag_templates:
   #     - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
   #     - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
+  #   extra_files:
+  #     - templates/
   # - goos: linux
   #   goarch: arm
   #   goarm: 7
@@ -96,6 +105,8 @@ dockers:
   #   build_flag_templates:
   #     - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
   #     - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
+  #   extra_files:
+  #     - templates/
   # - goos: linux
   #   goarch: arm64
   #   binaries:
@@ -110,3 +121,5 @@ dockers:
   #   build_flag_templates:
   #     - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
   #     - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
+  #   extra_files:
+  #     - templates/
