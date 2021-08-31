@@ -10,13 +10,13 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/business"
-	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/business/prometheushook/models"
 	cerrors "github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/common/errors"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/common/utils"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/config"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/log"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/metrics"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/server/middlewares"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/server/rest"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/signalhandler"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/tracing"
 )
@@ -113,36 +113,7 @@ func (svr *Server) generateRouter() (http.Handler, error) {
 	}
 
 	// Add routes
-	router.POST("/prometheus/webhook", func(c *gin.Context) {
-		// Get logger from request
-		reqLogger := log.GetLoggerFromGin(c)
-
-		var alerts models.PrometheusAlertHook
-		// Try to map data
-		err := c.ShouldBindJSON(&alerts)
-		// Check if error exists
-		if err != nil {
-			reqLogger.Error(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		// Validate input
-		err = alerts.Validate()
-		if err != nil {
-			reqLogger.Error(err)
-
-			utils.AnswerWithError(c, err)
-			return
-		}
-		err = svr.busiServices.PrometheusHookSvc.ManageHook(&alerts)
-		if err != nil {
-			reqLogger.Error(err)
-
-			utils.AnswerWithError(c, err)
-			return
-		}
-		c.Status(http.StatusNoContent)
-	})
+	rest.AddRESTEndpoint(router, svr.busiServices)
 
 	return router, nil
 }

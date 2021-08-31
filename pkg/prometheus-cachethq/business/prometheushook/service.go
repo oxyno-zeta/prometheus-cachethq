@@ -11,14 +11,17 @@ import (
 const alertNameKey = "alertname"
 
 type service struct {
-	cfg         *config.Config
+	cfgManager  config.Manager
 	cachethqCtx cachethq.Client
 	metricsCtx  metrics.Client
 }
 
 func (ctx *service) ManageHook(promAlertHook *models.PrometheusAlertHook) error {
+	// Get configuration
+	cfg := ctx.cfgManager.GetConfig()
+
 	// Loop over targets
-	for _, target := range ctx.cfg.Targets {
+	for _, target := range cfg.Targets {
 		// Loop over alerts matching
 		for _, alertMatching := range target.Alerts {
 			// Begin creation of matching labels
@@ -37,31 +40,53 @@ func (ctx *service) ManageHook(promAlertHook *models.PrometheusAlertHook) error 
 			}
 
 			// Get matching labels keys
-			matchingLabelsKeys := funk.Keys(matchingLabels).([]string)
+			matchingLabelsKeys, _ := funk.Keys(matchingLabels).([]string)
 
 			// Check if there is an alert target that match this alert
 			for _, alert := range promAlertHook.Alerts {
+				// Check if alert if matching current target
 				if isAlertMatching(matchingLabelsKeys, matchingLabels, alert) {
 					// Alert is matching
 					componentStatus := target.Component.Status
+					// Check if alert have status resolved
 					if alert.Status == models.PrometheusStatusResolved {
 						componentStatus = config.ComponentOperationalStatus
 					}
+
+					// Check if target have an incident configuration
 					if target.Incident != nil {
+						// Store incident status
 						incidentStatus := target.Incident.Status
+						// Check if alert have status resolved
 						if alert.Status == models.PrometheusStatusResolved {
+							// Store incident status to fixed
 							incidentStatus = config.IncidentFixedStatus
 						}
-						err := ctx.cachethqCtx.CreateIncident(target.Component.Name, target.Component.GroupName, componentStatus, target.Incident, incidentStatus)
+
+						// Create incident
+						err := ctx.cachethqCtx.CreateIncident(
+							target.Component.Name,
+							target.Component.GroupName,
+							componentStatus,
+							target.Incident,
+							incidentStatus,
+						)
+						// Check error
 						if err != nil {
 							return err
 						}
+
+						// Increment incident counter
 						ctx.metricsCtx.IncrementIncidentManagedCounter(incidentStatus, componentStatus)
 					} else {
+						// Change component status
 						err := ctx.cachethqCtx.ChangeComponentStatus(target.Component.Name, target.Component.GroupName, componentStatus)
+						// Check error
 						if err != nil {
 							return err
 						}
+
+						// Increment component counter
 						ctx.metricsCtx.IncrementComponentManagedCounter(componentStatus)
 					}
 				}

@@ -3,8 +3,10 @@ package main
 import (
 	"os"
 	"syscall"
+	"time"
 
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/business"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/cachethq"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/config"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/log"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/metrics"
@@ -73,6 +75,23 @@ func main() {
 		}
 	})
 
+	// Create cachetHQ service
+	cachetHQCl := cachethq.NewInstance(cfgManager)
+	// Initialize
+	err = cachetHQCl.Initialize()
+	// Check error
+	if err != nil {
+		logger.Fatal(err)
+	}
+	// Prepare on reload hook
+	cfgManager.AddOnChangeHook(func() {
+		err = cachetHQCl.Initialize()
+		// Check error
+		if err != nil {
+			logger.Fatal(err)
+		}
+	})
+
 	// Create signal handler service
 	signalHandlerSvc := signalhandler.NewClient(logger, true, []os.Signal{syscall.SIGTERM, syscall.SIGINT})
 	// Initialize service
@@ -83,11 +102,18 @@ func main() {
 	}
 
 	// Create business services
-	busServices := business.NewServices(logger, cfgManager, metricsCl)
+	busServices := business.NewServices(logger, cfgManager, metricsCl, cachetHQCl)
 
 	// Create servers
 	svr := server.NewServer(logger, cfgManager, metricsCl, tracingSvc, busServices, signalHandlerSvc)
 	intSvr := server.NewInternalServer(logger, cfgManager, metricsCl, signalHandlerSvc)
+
+	intSvr.AddChecker(&server.CheckerInput{
+		Name:     "cachetHQ",
+		CheckFn:  cachetHQCl.Ping,
+		Interval: time.Second,
+		Timeout:  time.Second,
+	})
 
 	// Generate server
 	err = svr.GenerateServer()

@@ -2,7 +2,7 @@ package models
 
 import "github.com/pkg/errors"
 
-// ErrHookVersionNotSupported Error Hook version not supported
+// ErrHookVersionNotSupported Error Hook version not supported.
 var ErrHookVersionNotSupported = errors.New("prometheus alert hook not supported (not in version 4)")
 
 /*
@@ -68,20 +68,20 @@ data example:
 }
 */
 
-// PrometheusAlertDetail Prometheus alert detail object
+// PrometheusAlertDetail Prometheus alert detail object.
 type PrometheusAlertDetail struct {
 	Status string            `json:"status" binding:"required"`
 	Labels map[string]string `json:"labels" binding:"required"`
 }
 
-// PrometheusAlertHook Prometheus alert hook object
+// PrometheusAlertHook Prometheus alert hook object.
 type PrometheusAlertHook struct {
 	Version string                   `json:"version" binding:"required"`
 	Alerts  []*PrometheusAlertDetail `json:"alerts" binding:"required,gt=0,dive"`
 }
 
-// PrometheusStatusResolved Prometheus status resolved
+// PrometheusStatusResolved Prometheus status resolved.
 const PrometheusStatusResolved = "resolved"
 
-// PrometheusStatusFiring Prometheus status firing
+// PrometheusStatusFiring Prometheus status firing.
 const PrometheusStatusFiring = "firing"

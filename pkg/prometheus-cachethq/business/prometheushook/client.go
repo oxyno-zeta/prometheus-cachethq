@@ -11,10 +11,6 @@ type Client interface {
 	ManageHook(promAlertHook *models.PrometheusAlertHook) error
 }
 
-func New(cfg *config.Config, metricsCtx metrics.Client) (Client, error) {
-	cachethqCtx, err := cachethq.NewInstance(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return &service{cachethqCtx: cachethqCtx, metricsCtx: metricsCtx, cfg: cfg}, nil
+func New(cfgManager config.Manager, metricsCtx metrics.Client, cachethqCtx cachethq.Client) Client {
+	return &service{cachethqCtx: cachethqCtx, metricsCtx: metricsCtx, cfgManager: cfgManager}
 }
