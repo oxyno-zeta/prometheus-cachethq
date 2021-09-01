@@ -9,6 +9,7 @@ import (
 	"github.com/thoas/go-funk"
 )
 
+//go:generate mockgen -destination=./mocks/mock_Client.go -package=mocks github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/signalhandler Client
 type Client interface {
 	// Initialize will initialize service.
 	// Important note: this must be called only once.
