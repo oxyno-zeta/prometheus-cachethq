@@ -10,7 +10,7 @@ TAGS      :=
 TESTS     := .
 TESTFLAGS :=
 LDFLAGS   := -w -s
-GOFLAGS   := -trimpath
+GOFLAGS   :=
 BINDIR    := $(CURDIR)/bin
 DISTDIR   := dist
 
@@ -61,7 +61,7 @@ code/build: code/clean setup/dep/install
 # Uncomment to use gox instead of goreleaser
 # .PHONY: code/build-cross
 # code/build-cross: code/clean setup/dep/install
-# 	CGO_ENABLED=0 GOFLAGS="$(GO_VENDOR)" gox -output="$(DISTDIR)/bin/{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(if $(TAGS),-tags '$(TAGS)',) -ldflags '$(LDFLAGS)' ${PKG}/cmd/${PROJECT_NAME}
+# 	CGO_ENABLED=0 GOFLAGS="-trimpath $(GO_VENDOR)" gox -output="$(DISTDIR)/bin/{{.OS}}-{{.Arch}}/{{.Dir}}" -osarch='$(TARGETS)' $(if $(TAGS),-tags '$(TAGS)',) -ldflags '$(LDFLAGS)' ${PKG}/cmd/${PROJECT_NAME}
 
 .PHONY: code/build-cross
 code/build-cross: code/clean setup/dep/install

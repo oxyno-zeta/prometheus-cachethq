@@ -8,7 +8,8 @@ before:
 builds:
   - main: ./cmd/prometheus-cachethq
     binary: prometheus-cachethq
-    # flags:
+    flags:
+      - -trimpath
     #   - -mod=vendor
     ldflags:
       - -extldflags "-static"
