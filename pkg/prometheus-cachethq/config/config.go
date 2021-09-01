@@ -13,24 +13,24 @@ const DefaultPort = 8080
 const DefaultInternalPort = 9090
 
 const (
-	// IncidentInvestigatingStatus Incident investigating status
+	// IncidentInvestigatingStatus Incident investigating status.
 	IncidentInvestigatingStatus = "INVESTIGATING"
-	// IncidentIdentifiedStatus Incident identified status
+	// IncidentIdentifiedStatus Incident identified status.
 	IncidentIdentifiedStatus = "IDENTIFIED"
-	// IncidentWatchingStatus Incident watching status
+	// IncidentWatchingStatus Incident watching status.
 	IncidentWatchingStatus = "WATCHING"
-	// IncidentFixedStatus Incident fixed status
+	// IncidentFixedStatus Incident fixed status.
 	IncidentFixedStatus = "FIXED"
 )
 
 const (
-	// ComponentOperationalStatus Component operational status
+	// ComponentOperationalStatus Component operational status.
 	ComponentOperationalStatus = "OPERATIONAL"
-	// ComponentPerformanceIssuesStatus Component performance issues status
+	// ComponentPerformanceIssuesStatus Component performance issues status.
 	ComponentPerformanceIssuesStatus = "PERFORMANCE_ISSUES"
-	// ComponentPartialOutageStatus Component partial outage status
+	// ComponentPartialOutageStatus Component partial outage status.
 	ComponentPartialOutageStatus = "PARTIAL_OUTAGE"
-	// ComponentMajorOutageStatus Component major outage status
+	// ComponentMajorOutageStatus Component major outage status.
 	ComponentMajorOutageStatus = "MAJOR_OUTAGE"
 )
 
@@ -44,20 +44,20 @@ type Config struct {
 	Targets        []*Target      `mapstructure:"targets" validate:"required,dive,required"`
 }
 
-// CachetConfig CachetHQ Configuration
+// CachetConfig CachetHQ Configuration.
 type CachetConfig struct {
 	URL    string `mapstructure:"url" validate:"required,uri"`
 	APIKey string `mapstructure:"apiKey" validate:"required"`
 }
 
-// Target Target configuration
+// Target Target configuration.
 type Target struct {
 	Component *TargetComponent `mapstructure:"component" validate:"required"`
 	Alerts    []*TargetAlerts  `mapstructure:"alerts" validate:"required,dive,required"`
 	Incident  *TargetIncident  `mapstructure:"incident" validate:"omitempty"`
 }
 
-// TargetIncident incident
+// TargetIncident incident.
 type TargetIncident struct {
 	Name    string `mapstructure:"name" validate:"required"`
 	Content string `mapstructure:"content" validate:"required"`
@@ -65,13 +65,13 @@ type TargetIncident struct {
 	Public  bool   `mapstructure:"public"`
 }
 
-// TargetAlerts Target Prometheus alerts
+// TargetAlerts Target Prometheus alerts.
 type TargetAlerts struct {
 	Name   string            `mapstructure:"name" validate:"required_without_all=Labels"`
 	Labels map[string]string `mapstructure:"labels" validate:"required_without_all=Name"`
 }
 
-// TargetComponent Target component
+// TargetComponent Target component.
 type TargetComponent struct {
 	Name      string `mapstructure:"name" validate:"required"`
 	GroupName string `mapstructure:"groupName"`

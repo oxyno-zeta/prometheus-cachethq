@@ -7,6 +7,8 @@ import (
 	gerrors "github.com/pkg/errors"
 )
 
+const cachethqMaxPagination = 10000
+
 type instance struct {
 	cfgManager config.Manager
 	client     *cachet.Client
@@ -70,8 +72,12 @@ func (ctx *instance) ChangeComponentStatus(name string, groupName string, string
 }
 
 func (ctx *instance) CreateIncident(
-	componentName string, componentGroupName string, componentStringStatus string,
-	incident *config.TargetIncident, incidentStringStatus string) error {
+	componentName string,
+	componentGroupName string,
+	componentStringStatus string,
+	incident *config.TargetIncident,
+	incidentStringStatus string,
+) error {
 	// Find component
 	compo, err := ctx.findComponent(componentName, componentGroupName)
 	// Check error
@@ -149,7 +155,7 @@ func (ctx *instance) findComponent(name string, groupName string) (*cachet.Compo
 	queryParams := &cachet.ComponentsQueryParams{
 		Name:         name,
 		GroupID:      grpID,
-		QueryOptions: cachet.QueryOptions{PerPage: 10000},
+		QueryOptions: cachet.QueryOptions{PerPage: cachethqMaxPagination},
 	}
 	c, _, err := ctx.client.Components.GetAll(queryParams)
 	// Check error
