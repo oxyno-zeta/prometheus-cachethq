@@ -1,8 +1,10 @@
 package prometheushook
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/business/prometheushook/models"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/cachethq"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/common/errors"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/config"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/metrics"
 	"github.com/thoas/go-funk"
@@ -11,12 +13,32 @@ import (
 const alertNameKey = "alertname"
 
 type service struct {
+	validate    *validator.Validate
 	cfgManager  config.Manager
 	cachethqCtx cachethq.Client
 	metricsCtx  metrics.Client
 }
 
+func (ctx *service) validateInputHook(promAlertHook *models.PrometheusAlertHook) error {
+	// Validate
+	err := ctx.validate.Struct(promAlertHook)
+	// Check error
+	if err != nil {
+		return errors.NewInvalidInputErrorWithError(err)
+	}
+
+	// Default
+	return nil
+}
+
 func (ctx *service) ManageHook(promAlertHook *models.PrometheusAlertHook) error {
+	// Validate input data
+	err := ctx.validateInputHook(promAlertHook)
+	// Check error
+	if err != nil {
+		return err
+	}
+
 	// Get configuration
 	cfg := ctx.cfgManager.GetConfig()
 

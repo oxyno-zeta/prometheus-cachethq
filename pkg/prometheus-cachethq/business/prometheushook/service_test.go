@@ -1,37 +1,11 @@
 package prometheushook
 
-// import (
-// 	"errors"
-// 	"testing"
+import (
+	"testing"
 
-// 	"github.com/gin-gonic/gin"
-// 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/cachethq"
-// 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/config"
-// 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/metrics"
-// 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/prometheushook"
-// )
-
-// type testCachetInstance struct {
-// 	err error
-// }
-
-// func (tci *testCachetInstance) ChangeComponentStatus(name string, groupName string, stringStatus string) error {
-// 	return tci.err
-// }
-
-// func (tci *testCachetInstance) CreateIncident(
-// 	componentName string, componentGroupName string, componentStringStatus string,
-// 	incident *config.TargetIncident, incidentStringStatus string) error {
-// 	return tci.err
-// }
-
-// type testMetricsInstance struct{}
-
-// func (tmi *testMetricsInstance) Instrument() gin.HandlerFunc {
-// 	return nil
-// }
-// func (tmi *testMetricsInstance) IncrementIncidentManagedCounter(string1 string, string2 string) {}
-// func (tmi *testMetricsInstance) IncrementComponentManagedCounter(string)                        {}
+	"github.com/go-playground/validator/v10"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/business/prometheushook/models"
+)
 
 // func TestContext_ManageHook(t *testing.T) {
 // 	type fields struct {
@@ -40,7 +14,7 @@ package prometheushook
 // 		metricsCtx  metrics.Client
 // 	}
 // 	type args struct {
-// 		promAlertHook *prometheushook.PrometheusAlertHook
+// 		promAlertHook *models.PrometheusAlertHook
 // 	}
 // 	tests := []struct {
 // 		name    string
@@ -88,7 +62,7 @@ package prometheushook
 // 				metricsCtx:  nil,
 // 			},
 // 			args: args{
-// 				promAlertHook: &prometheushook.PrometheusAlertHook{
+// 				promAlertHook: &models.PrometheusAlertHook{
 // 					Version: "4",
 // 					Alerts: []*prometheushook.PrometheusAlertDetail{{
 // 						Status: "firing",
@@ -353,121 +327,186 @@ package prometheushook
 // 	}
 // }
 
-// func Test_isAlertMatching(t *testing.T) {
-// 	type args struct {
-// 		matchingLabelsKeys []string
-// 		matchingLabels     map[string]string
-// 		alert              *prometheushook.PrometheusAlertDetail
-// 	}
-// 	tests := []struct {
-// 		name string
-// 		args args
-// 		want bool
-// 	}{
-// 		{
-// 			name: "No matching labels keys",
-// 			args: args{
-// 				matchingLabelsKeys: nil,
-// 				matchingLabels:     nil,
-// 				alert: &prometheushook.PrometheusAlertDetail{
-// 					Status: "firing",
-// 					Labels: map[string]string{
-// 						"label1": "value1",
-// 					},
-// 				},
-// 			},
-// 			want: false,
-// 		},
-// 		{
-// 			name: "Empty matching labels keys",
-// 			args: args{
-// 				matchingLabelsKeys: []string{},
-// 				matchingLabels:     nil,
-// 				alert: &prometheushook.PrometheusAlertDetail{
-// 					Status: "firing",
-// 					Labels: map[string]string{
-// 						"label1": "value1",
-// 					},
-// 				},
-// 			},
-// 			want: false,
-// 		},
-// 		{
-// 			name: "Labels don't match",
-// 			args: args{
-// 				matchingLabelsKeys: []string{"label_found"},
-// 				matchingLabels: map[string]string{
-// 					"label_found": "value",
-// 				},
-// 				alert: &prometheushook.PrometheusAlertDetail{
-// 					Status: "firing",
-// 					Labels: map[string]string{
-// 						"label1": "value1",
-// 					},
-// 				},
-// 			},
-// 			want: false,
-// 		},
-// 		{
-// 			name: "Labels don't match",
-// 			args: args{
-// 				matchingLabelsKeys: []string{"label_found", "label2"},
-// 				matchingLabels: map[string]string{
-// 					"label_found": "value",
-// 					"label2":      "value2",
-// 				},
-// 				alert: &prometheushook.PrometheusAlertDetail{
-// 					Status: "firing",
-// 					Labels: map[string]string{
-// 						"label1": "value1",
-// 						"label2": "value2",
-// 					},
-// 				},
-// 			},
-// 			want: false,
-// 		},
-// 		{
-// 			name: "Labels match and values don't match",
-// 			args: args{
-// 				matchingLabelsKeys: []string{"label1", "label2"},
-// 				matchingLabels: map[string]string{
-// 					"label1": "value",
-// 					"label2": "value2",
-// 				},
-// 				alert: &prometheushook.PrometheusAlertDetail{
-// 					Status: "firing",
-// 					Labels: map[string]string{
-// 						"label1": "value1",
-// 						"label2": "value2",
-// 					},
-// 				},
-// 			},
-// 			want: false,
-// 		},
-// 		{
-// 			name: "Labels and values match",
-// 			args: args{
-// 				matchingLabelsKeys: []string{"label1", "label2"},
-// 				matchingLabels: map[string]string{
-// 					"label1": "value1",
-// 					"label2": "value2",
-// 				},
-// 				alert: &prometheushook.PrometheusAlertDetail{
-// 					Status: "firing",
-// 					Labels: map[string]string{
-// 						"label1": "value1",
-// 						"label2": "value2",
-// 					},
-// 				},
-// 			},
-// 			want: true,
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			if got := isAlertMatching(tt.args.matchingLabelsKeys, tt.args.matchingLabels, tt.args.alert); got != tt.want {
-// 				t.Errorf("isAlertMatching() = %v, want %v", got, tt.want)
-// 			}
-// 		})
-// 	}
-// }
+func Test_isAlertMatching(t *testing.T) {
+	type args struct {
+		matchingLabelsKeys []string
+		matchingLabels     map[string]string
+		alert              *models.PrometheusAlertDetail
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "No matching labels keys",
+			args: args{
+				matchingLabelsKeys: nil,
+				matchingLabels:     nil,
+				alert: &models.PrometheusAlertDetail{
+					Status: "firing",
+					Labels: map[string]string{
+						"label1": "value1",
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Empty matching labels keys",
+			args: args{
+				matchingLabelsKeys: []string{},
+				matchingLabels:     nil,
+				alert: &models.PrometheusAlertDetail{
+					Status: "firing",
+					Labels: map[string]string{
+						"label1": "value1",
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Labels don't match",
+			args: args{
+				matchingLabelsKeys: []string{"label_found"},
+				matchingLabels: map[string]string{
+					"label_found": "value",
+				},
+				alert: &models.PrometheusAlertDetail{
+					Status: "firing",
+					Labels: map[string]string{
+						"label1": "value1",
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Labels don't match",
+			args: args{
+				matchingLabelsKeys: []string{"label_found", "label2"},
+				matchingLabels: map[string]string{
+					"label_found": "value",
+					"label2":      "value2",
+				},
+				alert: &models.PrometheusAlertDetail{
+					Status: "firing",
+					Labels: map[string]string{
+						"label1": "value1",
+						"label2": "value2",
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Labels match and values don't match",
+			args: args{
+				matchingLabelsKeys: []string{"label1", "label2"},
+				matchingLabels: map[string]string{
+					"label1": "value",
+					"label2": "value2",
+				},
+				alert: &models.PrometheusAlertDetail{
+					Status: "firing",
+					Labels: map[string]string{
+						"label1": "value1",
+						"label2": "value2",
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Labels and values match",
+			args: args{
+				matchingLabelsKeys: []string{"label1", "label2"},
+				matchingLabels: map[string]string{
+					"label1": "value1",
+					"label2": "value2",
+				},
+				alert: &models.PrometheusAlertDetail{
+					Status: "firing",
+					Labels: map[string]string{
+						"label1": "value1",
+						"label2": "value2",
+					},
+				},
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isAlertMatching(tt.args.matchingLabelsKeys, tt.args.matchingLabels, tt.args.alert); got != tt.want {
+				t.Errorf("isAlertMatching() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_service_validateInputHook(t *testing.T) {
+	type args struct {
+		promAlertHook *models.PrometheusAlertHook
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name:    "nil case",
+			args:    args{},
+			wantErr: true,
+		},
+		{
+			name:    "empty case",
+			args:    args{promAlertHook: &models.PrometheusAlertHook{}},
+			wantErr: true,
+		},
+		{
+			name: "not a valid version",
+			args: args{
+				promAlertHook: &models.PrometheusAlertHook{
+					Version: "3",
+					Alerts: []*models.PrometheusAlertDetail{
+						{
+							Status: "firing",
+							Labels: map[string]string{
+								"alertname": "fail",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid",
+			args: args{
+				promAlertHook: &models.PrometheusAlertHook{
+					Version: "4",
+					Alerts: []*models.PrometheusAlertDetail{
+						{
+							Status: "firing",
+							Labels: map[string]string{
+								"alertname": "fail",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := &service{
+				validate: validator.New(),
+			}
+			if err := ctx.validateInputHook(tt.args.promAlertHook); (err != nil) != tt.wantErr {
+				t.Errorf("service.validateInputHook() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

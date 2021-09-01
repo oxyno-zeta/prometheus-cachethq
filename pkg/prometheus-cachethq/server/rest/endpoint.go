@@ -25,15 +25,9 @@ func AddRESTEndpoint(router *gin.Engine, businessServices *business.Services) {
 
 			return
 		}
-		// Validate input
-		err = alerts.Validate()
-		if err != nil {
-			reqLogger.Error(err)
-			utils.AnswerWithError(c, err)
 
-			return
-		}
 		err = businessServices.PrometheusHookSvc.ManageHook(&alerts)
+		// Check error
 		if err != nil {
 			reqLogger.Error(err)
 			utils.AnswerWithError(c, err)
