@@ -102,7 +102,11 @@ func (ctx *service) ManageHook(promAlertHook *models.PrometheusAlertHook) error 
 						ctx.metricsCtx.IncrementIncidentManagedCounter(incidentStatus, componentStatus)
 					} else {
 						// Change component status
-						err := ctx.cachethqCtx.ChangeComponentStatus(target.Component.Name, target.Component.GroupName, componentStatus)
+						err := ctx.cachethqCtx.ChangeComponentStatus(
+							target.Component.Name,
+							target.Component.GroupName,
+							componentStatus,
+						)
 						// Check error
 						if err != nil {
 							return err

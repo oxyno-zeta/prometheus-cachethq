@@ -16,6 +16,7 @@ var ErrComponentGroupNotFound = errors.New("component group not found")
 var ErrStatusNotFound = errors.New("status not found")
 
 // Instance instance interface.
+//go:generate mockgen -destination=./mocks/mock_Client.go -package=mocks github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/cachethq Client
 type Client interface {
 	// Initialize will initialize service.
 	Initialize() error
