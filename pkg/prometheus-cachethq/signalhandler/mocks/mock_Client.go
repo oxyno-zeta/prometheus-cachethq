@@ -77,6 +77,18 @@ func (mr *MockClientMockRecorder) IsStoppingSystem() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsStoppingSystem", reflect.TypeOf((*MockClient)(nil).IsStoppingSystem))
 }
 
+// OnExit mocks base method.
+func (m *MockClient) OnExit(arg0 func()) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "OnExit", arg0)
+}
+
+// OnExit indicates an expected call of OnExit.
+func (mr *MockClientMockRecorder) OnExit(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnExit", reflect.TypeOf((*MockClient)(nil).OnExit), arg0)
+}
+
 // OnSignal mocks base method.
 func (m *MockClient) OnSignal(arg0 os.Signal, arg1 func()) {
 	m.ctrl.T.Helper()

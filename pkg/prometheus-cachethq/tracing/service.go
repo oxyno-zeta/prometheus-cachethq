@@ -8,7 +8,6 @@ import (
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/config"
 	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/log"
 	"github.com/pkg/errors"
-
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerprom "github.com/uber/jaeger-lib/metrics/prometheus"

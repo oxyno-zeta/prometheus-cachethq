@@ -15,7 +15,11 @@ type Client interface {
 	// Important note: this must be called only once.
 	Initialize() error
 	// OnSignal will add a hook on specific signal.
+	// Hooks for SIGINT and SIGTERM are called here before checking that all requests are finished and calling onExit hooks.
 	OnSignal(signal os.Signal, hook func())
+	// OnExit will add a hook that will be called when a SIGINT or SIGTERM is caught and when the application will be closed
+	// That will be launched only when all incoming requests are finished.
+	OnExit(hook func())
 	// Middleware to count active requests.
 	ActiveRequestCounterMiddleware() gin.HandlerFunc
 	// Is stopping system will return true if the application is stopping.
@@ -35,7 +39,7 @@ func NewClient(logger log.Logger, serverMode bool, signalListToNotify []os.Signa
 		serverMode:               serverMode,
 		signalListToNotify:       signalListToNotifyInternal,
 		hooksStorage:             map[os.Signal][]func(){},
-		signalChan:               make(chan os.Signal),
+		onExitHookStorage:        []func(){},
 		activeRequestCounter:     0,
 		activeRequestCounterChan: make(chan int64),
 	}

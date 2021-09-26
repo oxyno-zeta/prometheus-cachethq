@@ -17,6 +17,12 @@ func (t *trace) SetTag(key string, value interface{}) {
 	t.span.SetTag(key, value)
 }
 
+func (t *trace) SetTags(tags map[string]interface{}) {
+	for k, v := range tags {
+		t.span.SetTag(k, v)
+	}
+}
+
 func (t *trace) GetChildTrace(operationName string) Trace {
 	tracer := opentracing.GlobalTracer()
 
@@ -66,4 +72,8 @@ func GetSpanIDFromContext(ctx context.Context) string {
 	}
 
 	return ""
+}
+
+func SetTraceToContext(ctx context.Context, t Trace) context.Context {
+	return opentracing.ContextWithSpan(ctx, t.(*trace).span)
 }
