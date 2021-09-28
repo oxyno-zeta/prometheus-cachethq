@@ -69,8 +69,6 @@ dockers:
       - "--platform=linux/amd64"
       - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
       - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
-    extra_files:
-      - templates/
   - goos: linux
     goarch: arm
     goarm: 6
@@ -85,8 +83,6 @@ dockers:
       - "--platform=linux/arm/v6"
       - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
       - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
-    extra_files:
-      - templates/
   - goos: linux
     goarch: arm
     goarm: 7
@@ -101,8 +97,6 @@ dockers:
       - "--platform=linux/arm/v7"
       - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
       - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
-    extra_files:
-      - templates/
   - goos: linux
     goarch: arm64
     ids:
@@ -116,8 +110,6 @@ dockers:
       - "--platform=linux/arm64/v8"
       - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
       - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
-    extra_files:
-      - templates/
 
 docker_manifests:
   - name_template: oxynozeta/prometheus-cachethq:latest
