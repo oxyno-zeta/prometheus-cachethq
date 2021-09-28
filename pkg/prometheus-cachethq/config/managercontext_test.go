@@ -25,35 +25,6 @@ func Test_loadBusinessDefaultValues(t *testing.T) {
 				Tracing: &TracingConfig{Enabled: false},
 			},
 		},
-		{
-			name: "oidc",
-			args: args{
-				out: &Config{
-					OIDCAuthentication: &OIDCAuthConfig{},
-				},
-			},
-			expectedCfg: &Config{
-				Tracing: &TracingConfig{Enabled: false},
-				OIDCAuthentication: &OIDCAuthConfig{
-					Scopes:     DefaultOIDCScopes,
-					CookieName: DefaultCookieName,
-				},
-			},
-		},
-		{
-			name: "opa",
-			args: args{
-				out: &Config{
-					OPAServerAuthorization: &OPAServerAuthorization{},
-				},
-			},
-			expectedCfg: &Config{
-				Tracing: &TracingConfig{Enabled: false},
-				OPAServerAuthorization: &OPAServerAuthorization{
-					Tags: map[string]string{},
-				},
-			},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

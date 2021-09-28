@@ -64,17 +64,9 @@ database:
 					Format: "text",
 					Level:  "error",
 				},
-				Tracing: &TracingConfig{Enabled: false},
-				Database: &DatabaseConfig{
-					ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-				},
+				Tracing:        &TracingConfig{Enabled: false},
 				Server:         &ServerConfig{Port: 8080},
 				InternalServer: &ServerConfig{Port: 9090},
-				LockDistributor: &LockDistributorConfig{
-					HeartbeatFrequency: "1s",
-					LeaseDuration:      "3s",
-					TableName:          "locks",
-				},
 			},
 		},
 	}
@@ -214,15 +206,6 @@ tracing:
 			Port: 9090,
 		},
 		Tracing: &TracingConfig{Enabled: true},
-		Database: &DatabaseConfig{
-
-			ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-		},
-		LockDistributor: &LockDistributorConfig{
-			HeartbeatFrequency: "1s",
-			LeaseDuration:      "3s",
-			TableName:          "locks",
-		},
 	}, res)
 
 	configs = map[string]string{
@@ -257,15 +240,6 @@ log:
 				Port: 9090,
 			},
 			Tracing: &TracingConfig{Enabled: true},
-			Database: &DatabaseConfig{
-
-				ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-			},
-			LockDistributor: &LockDistributorConfig{
-				HeartbeatFrequency: "1s",
-				LeaseDuration:      "3s",
-				TableName:          "locks",
-			},
 		}, res)
 		return
 	case <-time.After(5 * time.Second):
@@ -357,28 +331,6 @@ oidcAuthentication:
 			Port: 9090,
 		},
 		Tracing: &TracingConfig{Enabled: true},
-		Database: &DatabaseConfig{
-
-			ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-		},
-		LockDistributor: &LockDistributorConfig{
-			HeartbeatFrequency: "1s",
-			LeaseDuration:      "3s",
-			TableName:          "locks",
-		},
-		OIDCAuthentication: &OIDCAuthConfig{
-			ClientID: "client-with-secret",
-			ClientSecret: &CredentialConfig{
-				Path:  os.TempDir() + "/secret1",
-				Value: "VALUE1",
-			},
-			CookieName:    "oidc",
-			State:         "my-secret-state-key",
-			IssuerURL:     "http://localhost:8088/auth/realms/integration",
-			RedirectURL:   "http://localhost:8080/",
-			EmailVerified: true,
-			Scopes:        []string{"openid", "email", "profile"},
-		},
 	}, res)
 
 	secretFiles = map[string]string{
@@ -411,28 +363,6 @@ oidcAuthentication:
 				Port: 9090,
 			},
 			Tracing: &TracingConfig{Enabled: true},
-			Database: &DatabaseConfig{
-
-				ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-			},
-			LockDistributor: &LockDistributorConfig{
-				HeartbeatFrequency: "1s",
-				LeaseDuration:      "3s",
-				TableName:          "locks",
-			},
-			OIDCAuthentication: &OIDCAuthConfig{
-				ClientID: "client-with-secret",
-				ClientSecret: &CredentialConfig{
-					Path:  os.TempDir() + "/secret1",
-					Value: "SECRET1",
-				},
-				CookieName:    "oidc",
-				State:         "my-secret-state-key",
-				IssuerURL:     "http://localhost:8088/auth/realms/integration",
-				RedirectURL:   "http://localhost:8080/",
-				EmailVerified: true,
-				Scopes:        []string{"openid", "email", "profile"},
-			},
 		}, res)
 		return
 	case <-time.After(15 * time.Second):
@@ -514,15 +444,6 @@ tracing:
 			Port: 9090,
 		},
 		Tracing: &TracingConfig{Enabled: true},
-		Database: &DatabaseConfig{
-
-			ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-		},
-		LockDistributor: &LockDistributorConfig{
-			HeartbeatFrequency: "1s",
-			LeaseDuration:      "3s",
-			TableName:          "locks",
-		},
 	}, res)
 
 	configs = map[string]string{
@@ -558,15 +479,6 @@ configuration with error
 				Port: 9090,
 			},
 			Tracing: &TracingConfig{Enabled: true},
-			Database: &DatabaseConfig{
-
-				ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-			},
-			LockDistributor: &LockDistributorConfig{
-				HeartbeatFrequency: "1s",
-				LeaseDuration:      "3s",
-				TableName:          "locks",
-			},
 		}, res)
 	}
 }
@@ -655,22 +567,6 @@ opaServerAuthorization:
 			Port: 9090,
 		},
 		Tracing: &TracingConfig{Enabled: true},
-		Database: &DatabaseConfig{
-
-			ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-		},
-		LockDistributor: &LockDistributorConfig{
-			HeartbeatFrequency: "1s",
-			LeaseDuration:      "3s",
-			TableName:          "locks",
-		},
-		OPAServerAuthorization: &OPAServerAuthorization{
-			URL: "http://fake.com",
-			Tags: map[string]string{
-				"t1": "v1",
-				"t2": "v2",
-			},
-		},
 	}, res)
 
 	configs = map[string]string{
@@ -705,22 +601,6 @@ opaServerAuthorization:
 				Port: 9090,
 			},
 			Tracing: &TracingConfig{Enabled: true},
-			Database: &DatabaseConfig{
-
-				ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-			},
-			LockDistributor: &LockDistributorConfig{
-				HeartbeatFrequency: "1s",
-				LeaseDuration:      "3s",
-				TableName:          "locks",
-			},
-			OPAServerAuthorization: &OPAServerAuthorization{
-				URL: "http://fake.com",
-				Tags: map[string]string{
-					"t1": "v1",
-					"t3": "v3",
-				},
-			},
 		}, res)
 		return
 	case <-time.After(5 * time.Second):
@@ -812,14 +692,5 @@ database:
 			Port: 9090,
 		},
 		Tracing: &TracingConfig{Enabled: false},
-		Database: &DatabaseConfig{
-
-			ConnectionURL: &CredentialConfig{Value: "host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable"},
-		},
-		LockDistributor: &LockDistributorConfig{
-			HeartbeatFrequency: "1s",
-			LeaseDuration:      "3s",
-			TableName:          "locks",
-		},
 	}, res)
 }
