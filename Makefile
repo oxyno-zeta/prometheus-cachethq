@@ -155,9 +155,9 @@ setup/metrics-services: down/metrics-services
 setup/services: down/services
 	@echo "Setup services"
 	docker run -d --rm --name postgres -p 5432:5432 -e POSTGRES_USER=cachet -e POSTGRES_PASSWORD=cachet -e PGDATA=/var/lib/postgresql/data/pgdata -v $(CURDIR)/.run/postgres:/var/lib/postgresql/data postgres:12
+	docker run --rm --name maildev -p 1080:1080 -p 1025:1025 -d maildev/maildev:1.1.0 --incoming-user fake --incoming-pass fakepassword
 	sleep 1
 	PGPASSWORD=cachet psql --username cachet -h localhost -f .local-resources/postgresql/cachet.sql
-	docker run --rm --name maildev -p 1080:1080 -p 1025:1025 -d maildev/maildev:1.1.0 --incoming-user fake --incoming-pass fakepassword
 	docker run -d --name cachet -v $(CURDIR)/.local-resources/cachethq:/var/www/html/bootstrap/cachet/ --link postgres:postgres -p 8000:8000 -e DB_DRIVER=pgsql \
 		-e DB_HOST=postgres -e DB_DATABASE=cachet -e DB_USERNAME=cachet -e DB_PASSWORD=cachet \
 		-e MAIL_ADDRESS=fake@fake.com -e MAIL_DRIVER=smtp -e MAIL_HOST=localhost -e MAIL_PORT=1025 -e MAIL_USERNAME=fake -e MAIL_PASSWORD=fakepassword \
