@@ -58,6 +58,18 @@ database:
     value: host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable
 
 `,
+				"cachet.yaml": `
+cachet:
+  url: http://localhost:8000
+  apiKey: fake
+
+targets:
+  - component:
+      name: component1
+      status: PARTIAL_OUTAGE
+    alerts:
+      - name: test1
+`,
 			},
 			expectedResult: &Config{
 				Log: &LogConfig{
@@ -67,6 +79,19 @@ database:
 				Tracing:        &TracingConfig{Enabled: false},
 				Server:         &ServerConfig{Port: 8080},
 				InternalServer: &ServerConfig{Port: 9090},
+				Cachet: &CachetConfig{
+					URL:    "http://localhost:8000",
+					APIKey: "fake",
+				},
+				Targets: []*Target{{
+					Component: &TargetComponent{
+						Name:   "component1",
+						Status: "PARTIAL_OUTAGE",
+					},
+					Alerts: []*TargetAlerts{{
+						Name: "test1",
+					}},
+				}},
 			},
 		},
 	}
@@ -155,6 +180,18 @@ database:
 tracing:
   enabled: true
 `,
+		"cachet.yaml": `
+cachet:
+  url: http://localhost:8000
+  apiKey: fake
+
+targets:
+  - component:
+      name: component1
+      status: PARTIAL_OUTAGE
+    alerts:
+      - name: test1
+`,
 	}
 
 	defer os.RemoveAll(dir) // clean up
@@ -206,6 +243,19 @@ tracing:
 			Port: 9090,
 		},
 		Tracing: &TracingConfig{Enabled: true},
+		Cachet: &CachetConfig{
+			URL:    "http://localhost:8000",
+			APIKey: "fake",
+		},
+		Targets: []*Target{{
+			Component: &TargetComponent{
+				Name:   "component1",
+				Status: "PARTIAL_OUTAGE",
+			},
+			Alerts: []*TargetAlerts{{
+				Name: "test1",
+			}},
+		}},
 	}, res)
 
 	configs = map[string]string{
@@ -240,132 +290,22 @@ log:
 				Port: 9090,
 			},
 			Tracing: &TracingConfig{Enabled: true},
+			Cachet: &CachetConfig{
+				URL:    "http://localhost:8000",
+				APIKey: "fake",
+			},
+			Targets: []*Target{{
+				Component: &TargetComponent{
+					Name:   "component1",
+					Status: "PARTIAL_OUTAGE",
+				},
+				Alerts: []*TargetAlerts{{
+					Name: "test1",
+				}},
+			}},
 		}, res)
 		return
 	case <-time.After(5 * time.Second):
-		assert.FailNow(t, "shouldn't call this")
-	}
-}
-
-func Test_Load_reload_secret(t *testing.T) {
-	// Channel for wait watch
-	waitCh := make(chan bool)
-
-	dir, err := ioutil.TempDir("", "config-reload-secret")
-	assert.NoError(t, err)
-
-	configs := map[string]string{
-		"log.yaml": `
-log:
-  level: error
-  format: text
-`,
-		"database.yaml": `
-database:
-  connectionUrl:
-    value: host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable
-
-`,
-		"tracing.yaml": `
-tracing:
-  enabled: true
-`,
-		"auth.yaml": `
-oidcAuthentication:
-  clientID: client-with-secret
-  state: my-secret-state-key
-  issuerUrl: http://localhost:8088/auth/realms/integration
-  redirectUrl: http://localhost:8080/ # /auth/oidc/callback will be added
-  emailVerified: true
-  clientSecret:
-    path: ` + os.TempDir() + `/secret1
-`,
-	}
-
-	defer os.RemoveAll(dir) // clean up
-	for k, v := range configs {
-		tmpfn := filepath.Join(dir, k)
-		err = ioutil.WriteFile(tmpfn, []byte(v), 0666)
-		assert.NoError(t, err)
-	}
-
-	secretFiles := map[string]string{
-		os.TempDir() + "/secret1": "VALUE1",
-	}
-	// Create secret files
-	for k, v := range secretFiles {
-		dirToCr := filepath.Dir(k)
-		err = os.MkdirAll(dirToCr, 0666)
-		assert.NoError(t, err)
-		err = ioutil.WriteFile(k, []byte(v), 0666)
-		assert.NoError(t, err)
-		defer os.Remove(k)
-	}
-
-	// Change var for main configuration file
-	mainConfigFolderPath = dir
-
-	ctx := &managercontext{
-		logger: log.NewLogger(),
-	}
-
-	ctx.AddOnChangeHook(func() {
-		waitCh <- true
-	})
-
-	// Load config
-	err = ctx.Load()
-	assert.NoError(t, err)
-	// Get configuration
-	res := ctx.GetConfig()
-
-	assert.Equal(t, &Config{
-		Log: &LogConfig{
-			Level:  "error",
-			Format: "text",
-		},
-		Server: &ServerConfig{
-			Port: 8080,
-		},
-		InternalServer: &ServerConfig{
-			Port: 9090,
-		},
-		Tracing: &TracingConfig{Enabled: true},
-	}, res)
-
-	secretFiles = map[string]string{
-		os.TempDir() + "/secret1": "SECRET1",
-	}
-	// Create secret files
-	for k, v := range secretFiles {
-		dirToCr := filepath.Dir(k)
-		err = os.MkdirAll(dirToCr, 0666)
-		assert.NoError(t, err)
-		err = ioutil.WriteFile(k, []byte(v), 0666)
-		assert.NoError(t, err)
-		defer os.Remove(k)
-	}
-
-	select {
-	case <-waitCh:
-		// Get configuration
-		res = ctx.GetConfig()
-
-		assert.Equal(t, &Config{
-			Log: &LogConfig{
-				Level:  "error",
-				Format: "text",
-			},
-			Server: &ServerConfig{
-				Port: 8080,
-			},
-			InternalServer: &ServerConfig{
-				Port: 9090,
-			},
-			Tracing: &TracingConfig{Enabled: true},
-		}, res)
-		return
-	case <-time.After(15 * time.Second):
 		assert.FailNow(t, "shouldn't call this")
 	}
 }
@@ -393,6 +333,18 @@ database:
 tracing:
   enabled: true
 `,
+		"cachet.yaml": `
+cachet:
+  url: http://localhost:8000
+  apiKey: fake
+
+targets:
+  - component:
+      name: component1
+      status: PARTIAL_OUTAGE
+    alerts:
+      - name: test1
+`,
 	}
 
 	defer os.RemoveAll(dir) // clean up
@@ -444,6 +396,19 @@ tracing:
 			Port: 9090,
 		},
 		Tracing: &TracingConfig{Enabled: true},
+		Cachet: &CachetConfig{
+			URL:    "http://localhost:8000",
+			APIKey: "fake",
+		},
+		Targets: []*Target{{
+			Component: &TargetComponent{
+				Name:   "component1",
+				Status: "PARTIAL_OUTAGE",
+			},
+			Alerts: []*TargetAlerts{{
+				Name: "test1",
+			}},
+		}},
 	}, res)
 
 	configs = map[string]string{
@@ -479,132 +444,20 @@ configuration with error
 				Port: 9090,
 			},
 			Tracing: &TracingConfig{Enabled: true},
+			Cachet: &CachetConfig{
+				URL:    "http://localhost:8000",
+				APIKey: "fake",
+			},
+			Targets: []*Target{{
+				Component: &TargetComponent{
+					Name:   "component1",
+					Status: "PARTIAL_OUTAGE",
+				},
+				Alerts: []*TargetAlerts{{
+					Name: "test1",
+				}},
+			}},
 		}, res)
-	}
-}
-
-func Test_Load_reload_config_map_structure(t *testing.T) {
-	// Channel for wait watch
-	waitCh := make(chan bool)
-
-	dir, err := ioutil.TempDir("", "config-reload-map-structure")
-	assert.NoError(t, err)
-
-	configs := map[string]string{
-		"log.yaml": `
-log:
-  level: error
-`,
-		"database.yaml": `
-database:
-  connectionUrl:
-    value: host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable
-
-`,
-		"tracing.yaml": `
-tracing:
-  enabled: true
-`,
-		"opa1.yaml": `
-opaServerAuthorization:
-  url: http://fake.com
-  tags:
-    t1: v1
-`,
-		"opa2.yaml": `
-opaServerAuthorization:
-  tags:
-    t2: v2
-`,
-	}
-
-	defer os.RemoveAll(dir) // clean up
-	for k, v := range configs {
-		tmpfn := filepath.Join(dir, k)
-		err = ioutil.WriteFile(tmpfn, []byte(v), 0666)
-		assert.NoError(t, err)
-	}
-
-	secretFiles := map[string]string{
-		os.TempDir() + "/secret1": "VALUE1",
-	}
-	// Create secret files
-	for k, v := range secretFiles {
-		dirToCr := filepath.Dir(k)
-		err = os.MkdirAll(dirToCr, 0666)
-		assert.NoError(t, err)
-		err = ioutil.WriteFile(k, []byte(v), 0666)
-		assert.NoError(t, err)
-		defer os.Remove(k)
-	}
-
-	// Change var for main configuration file
-	mainConfigFolderPath = dir
-
-	ctx := &managercontext{
-		logger: log.NewLogger(),
-	}
-
-	ctx.AddOnChangeHook(func() {
-		waitCh <- true
-	})
-
-	// Load config
-	err = ctx.Load()
-	assert.NoError(t, err)
-	// Get configuration
-	res := ctx.GetConfig()
-
-	assert.Equal(t, &Config{
-		Log: &LogConfig{
-			Level:  "error",
-			Format: "json",
-		},
-		Server: &ServerConfig{
-			Port: 8080,
-		},
-		InternalServer: &ServerConfig{
-			Port: 9090,
-		},
-		Tracing: &TracingConfig{Enabled: true},
-	}, res)
-
-	configs = map[string]string{
-		"opa2.yaml": `
-opaServerAuthorization:
-  tags:
-    t3: v3
-`,
-	}
-
-	defer os.RemoveAll(dir) // clean up
-	for k, v := range configs {
-		tmpfn := filepath.Join(dir, k)
-		err = ioutil.WriteFile(tmpfn, []byte(v), 0666)
-		assert.NoError(t, err)
-	}
-
-	select {
-	case <-waitCh:
-		// Get configuration
-		res = ctx.GetConfig()
-
-		assert.Equal(t, &Config{
-			Log: &LogConfig{
-				Level:  "error",
-				Format: "json",
-			},
-			Server: &ServerConfig{
-				Port: 8080,
-			},
-			InternalServer: &ServerConfig{
-				Port: 9090,
-			},
-			Tracing: &TracingConfig{Enabled: true},
-		}, res)
-		return
-	case <-time.After(5 * time.Second):
-		assert.FailNow(t, "shouldn't call this")
 	}
 }
 
@@ -640,6 +493,18 @@ database:
   connectionUrl:
     value: host=localhost port=5432 user=postgres dbname=postgres password=postgres sslmode=disable
 
+`,
+		"cachet.yaml": `
+cachet:
+  url: http://localhost:8000
+  apiKey: fake
+
+targets:
+  - component:
+      name: component1
+      status: PARTIAL_OUTAGE
+    alerts:
+      - name: test1
 `,
 	}
 
@@ -692,5 +557,18 @@ database:
 			Port: 9090,
 		},
 		Tracing: &TracingConfig{Enabled: false},
+		Cachet: &CachetConfig{
+			URL:    "http://localhost:8000",
+			APIKey: "fake",
+		},
+		Targets: []*Target{{
+			Component: &TargetComponent{
+				Name:   "component1",
+				Status: "PARTIAL_OUTAGE",
+			},
+			Alerts: []*TargetAlerts{{
+				Name: "test1",
+			}},
+		}},
 	}, res)
 }
