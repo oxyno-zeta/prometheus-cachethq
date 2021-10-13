@@ -118,7 +118,8 @@ func (ctx *instance) CreateIncident(
 func (ctx *instance) findComponentGroup(name string) (*cachet.ComponentGroup, error) {
 	// Create query params for name filter
 	queryParams := &cachet.ComponentGroupsQueryParams{
-		Name: name,
+		Name:         name,
+		QueryOptions: cachet.QueryOptions{PerPage: cachethqMaxPagination},
 	}
 	c, _, err := ctx.client.ComponentGroups.GetAll(queryParams)
 	// Check error
