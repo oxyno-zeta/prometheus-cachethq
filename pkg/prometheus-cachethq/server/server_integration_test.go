@@ -22,6 +22,43 @@ import (
 )
 
 func TestPublicRouter(t *testing.T) {
+	body := `{
+  "receiver": "webhook",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "test1",
+        "dc": "eu-west-1",
+        "instance": "localhost:9090",
+        "job": "prometheus24"
+      },
+      "annotations": {
+        "description": "some description"
+      },
+      "startsAt": "2018-08-03T09:52:26.739266876+02:00",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://my-laptop:9090/graph?g0.expr=go_memstats_alloc_bytes+%3E+0\u0026g0.tab=1"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "Test",
+    "job": "prometheus24"
+  },
+  "commonLabels": {
+    "alertname": "Test",
+    "dc": "eu-west-1",
+    "instance": "localhost:9090",
+    "job": "prometheus24"
+  },
+  "commonAnnotations": {
+    "description": "some description"
+  },
+  "externalURL": "http://my-laptop:9093",
+  "version": "4",
+  "groupKey": "{}:{alertname=\"Test\", job=\"prometheus24\"}"
+}`
 	cachetCfg := &config.CachetConfig{
 		URL:    "http://localhost:8000",
 		APIKey: "8I0tUhh4WUZIL7eyFUMX",
@@ -43,6 +80,7 @@ func TestPublicRouter(t *testing.T) {
 		expectedBody             string
 		expectedHeaders          map[string]string
 		expectedComponentsStatus map[int]int
+		expectedIncidents        []*cachet.Incident
 		wantErr                  bool
 	}{
 		{
@@ -75,45 +113,9 @@ func TestPublicRouter(t *testing.T) {
 					}},
 				},
 			},
-			inputMethod: "POST",
-			inputURL:    "http://localhost/prometheus/webhook",
-			inputBody: `{
-  "receiver": "webhook",
-  "status": "firing",
-  "alerts": [
-    {
-      "status": "firing",
-      "labels": {
-        "alertname": "test1",
-        "dc": "eu-west-1",
-        "instance": "localhost:9090",
-        "job": "prometheus24"
-      },
-      "annotations": {
-        "description": "some description"
-      },
-      "startsAt": "2018-08-03T09:52:26.739266876+02:00",
-      "endsAt": "0001-01-01T00:00:00Z",
-      "generatorURL": "http://my-laptop:9090/graph?g0.expr=go_memstats_alloc_bytes+%3E+0\u0026g0.tab=1"
-    }
-  ],
-  "groupLabels": {
-    "alertname": "Test",
-    "job": "prometheus24"
-  },
-  "commonLabels": {
-    "alertname": "Test",
-    "dc": "eu-west-1",
-    "instance": "localhost:9090",
-    "job": "prometheus24"
-  },
-  "commonAnnotations": {
-    "description": "some description"
-  },
-  "externalURL": "http://my-laptop:9093",
-  "version": "4",
-  "groupKey": "{}:{alertname=\"Test\", job=\"prometheus24\"}"
-}`,
+			inputMethod:  "POST",
+			inputURL:     "http://localhost/prometheus/webhook",
+			inputBody:    body,
 			expectedCode: 204,
 			expectedComponentsStatus: map[int]int{
 				1: cachet.ComponentStatusOperational,
@@ -124,7 +126,7 @@ func TestPublicRouter(t *testing.T) {
 			},
 		},
 		{
-			name: "should match the alert name",
+			name: "should match the alert name for 1 component",
 			args: args{
 				cfg: &config.Config{
 					Cachet:  cachetCfg,
@@ -136,45 +138,9 @@ func TestPublicRouter(t *testing.T) {
 					}},
 				},
 			},
-			inputMethod: "POST",
-			inputURL:    "http://localhost/prometheus/webhook",
-			inputBody: `{
-  "receiver": "webhook",
-  "status": "firing",
-  "alerts": [
-    {
-      "status": "firing",
-      "labels": {
-        "alertname": "test1",
-        "dc": "eu-west-1",
-        "instance": "localhost:9090",
-        "job": "prometheus24"
-      },
-      "annotations": {
-        "description": "some description"
-      },
-      "startsAt": "2018-08-03T09:52:26.739266876+02:00",
-      "endsAt": "0001-01-01T00:00:00Z",
-      "generatorURL": "http://my-laptop:9090/graph?g0.expr=go_memstats_alloc_bytes+%3E+0\u0026g0.tab=1"
-    }
-  ],
-  "groupLabels": {
-    "alertname": "Test",
-    "job": "prometheus24"
-  },
-  "commonLabels": {
-    "alertname": "Test",
-    "dc": "eu-west-1",
-    "instance": "localhost:9090",
-    "job": "prometheus24"
-  },
-  "commonAnnotations": {
-    "description": "some description"
-  },
-  "externalURL": "http://my-laptop:9093",
-  "version": "4",
-  "groupKey": "{}:{alertname=\"Test\", job=\"prometheus24\"}"
-}`,
+			inputMethod:  "POST",
+			inputURL:     "http://localhost/prometheus/webhook",
+			inputBody:    body,
 			expectedCode: 204,
 			expectedComponentsStatus: map[int]int{
 				1: cachet.ComponentStatusOperational,
@@ -183,6 +149,191 @@ func TestPublicRouter(t *testing.T) {
 				4: cachet.ComponentStatusPartialOutage,
 				5: cachet.ComponentStatusOperational,
 			},
+		},
+		{
+			name: "should match the alert name for 2 components",
+			args: args{
+				cfg: &config.Config{
+					Cachet:  cachetCfg,
+					Tracing: tracingCfg,
+					Server:  serverCfg,
+					Targets: []*config.Target{
+						{
+							Alerts:    []*config.TargetAlerts{{Name: "test1"}},
+							Component: &config.TargetComponent{Name: "component1", Status: "PARTIAL_OUTAGE"},
+						},
+						{
+							Alerts:    []*config.TargetAlerts{{Name: "test1"}},
+							Component: &config.TargetComponent{Name: "triple1", Status: "PARTIAL_OUTAGE"},
+						},
+					},
+				},
+			},
+			inputMethod:  "POST",
+			inputURL:     "http://localhost/prometheus/webhook",
+			inputBody:    body,
+			expectedCode: 204,
+			expectedComponentsStatus: map[int]int{
+				1: cachet.ComponentStatusPartialOutage,
+				2: cachet.ComponentStatusOperational,
+				3: cachet.ComponentStatusOperational,
+				4: cachet.ComponentStatusPartialOutage,
+				5: cachet.ComponentStatusOperational,
+			},
+		},
+		{
+			name: "should match the alert name for 2 components (one with alert name and the other with label)",
+			args: args{
+				cfg: &config.Config{
+					Cachet:  cachetCfg,
+					Tracing: tracingCfg,
+					Server:  serverCfg,
+					Targets: []*config.Target{
+						{
+							Alerts:    []*config.TargetAlerts{{Name: "test1"}},
+							Component: &config.TargetComponent{Name: "component1", Status: "PARTIAL_OUTAGE"},
+						},
+						{
+							Alerts:    []*config.TargetAlerts{{Labels: map[string]string{"job": "prometheus24"}}},
+							Component: &config.TargetComponent{Name: "triple1", Status: "PARTIAL_OUTAGE"},
+						},
+					},
+				},
+			},
+			inputMethod:  "POST",
+			inputURL:     "http://localhost/prometheus/webhook",
+			inputBody:    body,
+			expectedCode: 204,
+			expectedComponentsStatus: map[int]int{
+				1: cachet.ComponentStatusPartialOutage,
+				2: cachet.ComponentStatusOperational,
+				3: cachet.ComponentStatusOperational,
+				4: cachet.ComponentStatusPartialOutage,
+				5: cachet.ComponentStatusOperational,
+			},
+		},
+		{
+			name: "should match component with group",
+			args: args{
+				cfg: &config.Config{
+					Cachet:  cachetCfg,
+					Tracing: tracingCfg,
+					Server:  serverCfg,
+					Targets: []*config.Target{
+						{
+							Alerts:    []*config.TargetAlerts{{Name: "test1"}},
+							Component: &config.TargetComponent{Name: "triple1", GroupName: "group1", Status: "PARTIAL_OUTAGE"},
+						},
+					},
+				},
+			},
+			inputMethod:  "POST",
+			inputURL:     "http://localhost/prometheus/webhook",
+			inputBody:    body,
+			expectedCode: 204,
+			expectedComponentsStatus: map[int]int{
+				1: cachet.ComponentStatusOperational,
+				2: cachet.ComponentStatusPartialOutage,
+				3: cachet.ComponentStatusOperational,
+				4: cachet.ComponentStatusOperational,
+				5: cachet.ComponentStatusOperational,
+			},
+		},
+		{
+			name: "should fail to match component with unknown group",
+			args: args{
+				cfg: &config.Config{
+					Cachet:  cachetCfg,
+					Tracing: tracingCfg,
+					Server:  serverCfg,
+					Targets: []*config.Target{
+						{
+							Alerts:    []*config.TargetAlerts{{Name: "test1"}},
+							Component: &config.TargetComponent{Name: "triple1", GroupName: "fake", Status: "PARTIAL_OUTAGE"},
+						},
+					},
+				},
+			},
+			inputMethod:  "POST",
+			inputURL:     "http://localhost/prometheus/webhook",
+			inputBody:    body,
+			expectedCode: 404,
+			expectedBody: "{\"error\":\"component group not found\",\"extensions\":{\"code\":\"NOT_FOUND\"}}",
+			expectedComponentsStatus: map[int]int{
+				1: cachet.ComponentStatusOperational,
+				2: cachet.ComponentStatusOperational,
+				3: cachet.ComponentStatusOperational,
+				4: cachet.ComponentStatusOperational,
+				5: cachet.ComponentStatusOperational,
+			},
+		},
+		{
+			name: "should fail to match a not found component",
+			args: args{
+				cfg: &config.Config{
+					Cachet:  cachetCfg,
+					Tracing: tracingCfg,
+					Server:  serverCfg,
+					Targets: []*config.Target{
+						{
+							Alerts:    []*config.TargetAlerts{{Name: "test1"}},
+							Component: &config.TargetComponent{Name: "fake", Status: "PARTIAL_OUTAGE"},
+						},
+					},
+				},
+			},
+			inputMethod:  "POST",
+			inputURL:     "http://localhost/prometheus/webhook",
+			inputBody:    body,
+			expectedCode: 404,
+			expectedBody: "{\"error\":\"component not found\",\"extensions\":{\"code\":\"NOT_FOUND\"}}",
+			expectedComponentsStatus: map[int]int{
+				1: cachet.ComponentStatusOperational,
+				2: cachet.ComponentStatusOperational,
+				3: cachet.ComponentStatusOperational,
+				4: cachet.ComponentStatusOperational,
+				5: cachet.ComponentStatusOperational,
+			},
+		},
+		{
+			name: "should create an incident",
+			args: args{
+				cfg: &config.Config{
+					Cachet:  cachetCfg,
+					Tracing: tracingCfg,
+					Server:  serverCfg,
+					Targets: []*config.Target{
+						{
+							Alerts:    []*config.TargetAlerts{{Name: "test1"}},
+							Component: &config.TargetComponent{Name: "triple1", GroupName: "group2", Status: "PARTIAL_OUTAGE"},
+							Incident: &config.TargetIncident{
+								Name:    "fake incident",
+								Content: "content",
+								Status:  "INVESTIGATING",
+								Public:  true,
+							},
+						},
+					},
+				},
+			},
+			inputMethod:  "POST",
+			inputURL:     "http://localhost/prometheus/webhook",
+			inputBody:    body,
+			expectedCode: 204,
+			expectedComponentsStatus: map[int]int{
+				1: cachet.ComponentStatusOperational,
+				2: cachet.ComponentStatusOperational,
+				3: cachet.ComponentStatusPartialOutage,
+				4: cachet.ComponentStatusOperational,
+				5: cachet.ComponentStatusOperational,
+			},
+			expectedIncidents: []*cachet.Incident{{
+				Name:        "fake incident",
+				Message:     "content",
+				Visible:     cachet.IncidentVisibilityPublic,
+				Status:      cachet.IncidentStatusInvestigating,
+				ComponentID: 3,
+			}},
 		},
 	}
 	for _, tt := range tests {
@@ -302,6 +453,23 @@ func TestPublicRouter(t *testing.T) {
 				c, _, err := client.Components.Get(k)
 				assert.NoError(t, err)
 				assert.Equal(t, v, c.Status)
+			}
+
+			for _, v := range tt.expectedIncidents {
+				incRes, _, err := client.Incidents.GetAll(&cachet.IncidentsQueryParams{
+					Name: v.Name,
+				})
+				assert.NoError(t, err)
+				assert.Len(t, incRes.Incidents, 1)
+
+				if len(incRes.Incidents) != 0 {
+					inc := incRes.Incidents[0]
+					assert.Equal(t, v.ComponentID, inc.ComponentID)
+					assert.Equal(t, v.Message, inc.Message)
+					assert.Equal(t, v.Name, inc.Name)
+					assert.Equal(t, v.Status, inc.Status)
+					assert.Equal(t, v.Visible, inc.Visible)
+				}
 			}
 		})
 	}
