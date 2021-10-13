@@ -164,15 +164,18 @@ func (ctx *instance) findComponent(name string, groupName string) (*cachet.Compo
 		return nil, errors.NewInternalServerErrorWithError(err)
 	}
 
+	// Save components size
+	cLength := len(c.Components)
+
 	// Check if length is 0
-	if len(c.Components) == 0 {
+	if cLength == 0 {
 		return nil, errors.NewNotFoundErrorWithError(ErrComponentNotFound)
 	}
 
 	// Filter components by groups
 	// Client doesn't manage group id equal to 0 for no groups...
 	// (Do a loop with index to avoid object copy)
-	for i := 0; i < len(c.Components); i++ {
+	for i := 0; i < cLength; i++ {
 		comp := c.Components[i]
 
 		if comp.GroupID == grpID {
