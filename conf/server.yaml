@@ -1,0 +1,8 @@
+server:
+  port: 8080
+  cors:
+    useDefaultConfiguration: true
+    allowWildcard: true
+    allowCredentials: true
+    allowOrigins:
+      - http://*

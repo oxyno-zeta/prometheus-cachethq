@@ -1,0 +1,21 @@
+cachet:
+  url: http://localhost:8000
+  apiKey: 8I0tUhh4WUZIL7eyFUMX
+
+targets:
+  - component:
+      name: component1
+      # groupName: group1
+      status: PARTIAL_OUTAGE
+    alerts:
+      - name: test1
+      - labels:
+          mmm: label1
+      - name: test2
+        labels:
+          mmm: label2
+    # incident:
+    #   name: Down
+    #   content: MMMMMMMMMMMMMM MM
+    #   status: INVESTIGATING
+    #   public: true

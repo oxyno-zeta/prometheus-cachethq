@@ -3,38 +3,43 @@
 project_name: prometheus-cachethq
 before:
   hooks:
-    - make clean
-    - make dep
-env:
-  - GO111MODULE=on
+    - make code/clean
+    - make setup/dep/install
 builds:
   - main: ./cmd/prometheus-cachethq
     binary: prometheus-cachethq
+    flags:
+      - -trimpath
+    #   - -mod=vendor
     ldflags:
       - -extldflags "-static"
-      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/version.Version={{ .Tag }}
-      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/version.GitCommit={{ .ShortCommit }}
-      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/version.BuildDate={{ .Date }}
+      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version.Version={{ .Tag }}
+      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version.GitCommit={{ .ShortCommit }}
+      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version.BuildDate={{ .Date }}
       # Clear the "unreleased" string in Metadata
-      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/version.Metadata=
+      - -X github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version.Metadata=
     env:
       - CGO_ENABLED=0
     goarch:
       - amd64
       - arm
       - arm64
-      - 386
-      - ppc64le
-      - s390x
     goarm:
       - 6
       - 7
     goos:
+      - windows
+      - darwin
       - linux
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: windows
+        goarch: arm64
 archives:
-  - files:
-      - LICENSE
-      - README.md
+  - format_overrides:
+      - goos: windows
+        format: zip
 checksum:
   name_template: "checksums.txt"
 snapshot:
@@ -53,60 +58,81 @@ changelog:
 dockers:
   - goos: linux
     goarch: amd64
-    binaries:
+    ids:
       - prometheus-cachethq
     image_templates:
-      - "oxynozeta/prometheus-cachethq:latest"
-      - "oxynozeta/prometheus-cachethq:{{ .Version }}"
-      - "oxynozeta/prometheus-cachethq:{{ .Major }}"
-      - "oxynozeta/prometheus-cachethq:{{ .Major }}.{{ .Minor }}"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-amd64"
     skip_push: false
+    use: buildx
     dockerfile: Dockerfile
     build_flag_templates:
+      - "--platform=linux/amd64"
       - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
       - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
-  # Disabled because can't build arm on release laptop
-  # - goos: linux
-  #   goarch: arm
-  #   goarm: 6
-  #   binaries:
-  #     - prometheus-cachethq
-  #   image_templates:
-  #     - "oxynozeta/prometheus-cachethq:latest-armv6"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv6"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Major }}-armv6"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Major }}.{{ .Minor }}-armv6"
-  #   skip_push: false
-  #   dockerfile: Dockerfile.armv6
-  #   build_flag_templates:
-  #     - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
-  #     - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
-  # - goos: linux
-  #   goarch: arm
-  #   goarm: 7
-  #   binaries:
-  #     - prometheus-cachethq
-  #   image_templates:
-  #     - "oxynozeta/prometheus-cachethq:latest-armv7"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv7"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Major }}-armv7"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Major }}.{{ .Minor }}-armv7"
-  #   skip_push: false
-  #   dockerfile: Dockerfile.armv7
-  #   build_flag_templates:
-  #     - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
-  #     - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
-  # - goos: linux
-  #   goarch: arm64
-  #   binaries:
-  #     - prometheus-cachethq
-  #   image_templates:
-  #     - "oxynozeta/prometheus-cachethq:latest-arm64"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Version }}-arm64"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Major }}-arm64"
-  #     - "oxynozeta/prometheus-cachethq:{{ .Major }}.{{ .Minor }}-arm64"
-  #   skip_push: false
-  #   dockerfile: Dockerfile.arm64
-  #   build_flag_templates:
-  #     - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
-  #     - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
+  - goos: linux
+    goarch: arm
+    goarm: 6
+    ids:
+      - prometheus-cachethq
+    image_templates:
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv6"
+    skip_push: false
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm/v6"
+      - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
+      - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
+  - goos: linux
+    goarch: arm
+    goarm: 7
+    ids:
+      - prometheus-cachethq
+    image_templates:
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv7"
+    skip_push: false
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm/v7"
+      - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
+      - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
+  - goos: linux
+    goarch: arm64
+    ids:
+      - prometheus-cachethq
+    image_templates:
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-arm64"
+    skip_push: false
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64/v8"
+      - "--label=oxyno-zeta.prometheus-cachethq.version={{ .Version }}"
+      - "--label=oxyno-zeta.prometheus-cachethq.name={{ .ProjectName }}"
+
+docker_manifests:
+  - name_template: oxynozeta/prometheus-cachethq:latest
+    image_templates:
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-amd64"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-arm64"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv6"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv7"
+  - name_template: "oxynozeta/prometheus-cachethq:{{ .Version }}"
+    image_templates:
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-amd64"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-arm64"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv6"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv7"
+  - name_template: "oxynozeta/prometheus-cachethq:{{ .Major }}"
+    image_templates:
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-amd64"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-arm64"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv6"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv7"
+  - name_template: "oxynozeta/prometheus-cachethq:{{ .Major }}.{{ .Minor }}"
+    image_templates:
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-amd64"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-arm64"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv6"
+      - "oxynozeta/prometheus-cachethq:{{ .Version }}-armv7"

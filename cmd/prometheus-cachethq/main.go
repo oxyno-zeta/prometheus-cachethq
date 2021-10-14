@@ -1,86 +1,137 @@
 package main
 
 import (
-	"net/http"
 	"os"
-	"strconv"
+	"syscall"
+	"time"
 
-	"github.com/oxyno-zeta/prometheus-cachethq/pkg/config"
-	"github.com/oxyno-zeta/prometheus-cachethq/pkg/metrics"
-	"github.com/oxyno-zeta/prometheus-cachethq/pkg/server"
-	"github.com/oxyno-zeta/prometheus-cachethq/pkg/version"
-	"github.com/sirupsen/logrus"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/business"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/cachethq"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/config"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/log"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/metrics"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/server"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/signalhandler"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/tracing"
+	"github.com/oxyno-zeta/prometheus-cachethq/pkg/prometheus-cachethq/version"
+	"golang.org/x/sync/errgroup"
 )
 
-// Main package
-
 func main() {
-	// Create logger
-	logger := logrus.New()
-	// Set JSON as default for the moment
-	logger.SetFormatter(&logrus.JSONFormatter{})
+	// Create new logger
+	logger := log.NewLogger()
 
-	// Load configuration from file
-	cfg, err := config.Load()
+	// Create configuration manager
+	cfgManager := config.NewManager(logger)
+
+	// Load configuration
+	err := cfgManager.Load()
+	// Check error
 	if err != nil {
 		logger.Fatal(err)
-		os.Exit(1)
 	}
 
+	// Get configuration
+	cfg := cfgManager.GetConfig()
 	// Configure logger
-	err = config.ConfigureLogger(logger, cfg.Log)
+	err = logger.Configure(cfg.Log.Level, cfg.Log.Format, cfg.Log.FilePath)
+	// Check error
 	if err != nil {
 		logger.Fatal(err)
-		os.Exit(1)
 	}
-	logger.Debug("Configuration successfully loaded and logger configured")
+
+	// Watch change for logger (special case)
+	cfgManager.AddOnChangeHook(func() {
+		// Get configuration
+		cfg := cfgManager.GetConfig()
+		// Configure logger
+		err = logger.Configure(cfg.Log.Level, cfg.Log.Format, cfg.Log.FilePath)
+		// Check error
+		if err != nil {
+			logger.Fatal(err)
+		}
+	})
 
 	// Getting version
 	v := version.GetVersion()
-	logger.Infof("Starting prometheus-cachethq version: %s (git commit: %s) built on %s", v.Version, v.GitCommit, v.BuildDate)
 
-	// Generate metrics instance
-	metricsCtx := metrics.NewInstance()
+	logger.Infof("Starting version: %s (git commit: %s) built on %s", v.Version, v.GitCommit, v.BuildDate)
 
-	// Listen
-	go internalServe(logger, cfg, metricsCtx)
-	serve(logger, cfg, metricsCtx)
-}
+	// Create metrics client
+	metricsCl := metrics.NewMetricsClient()
 
-func internalServe(logger *logrus.Logger, cfg *config.Config, metricsCtx metrics.Instance) {
-	r := server.GenerateInternalRouter(logger, cfg, metricsCtx)
-	// Create server
-	addr := cfg.InternalServer.ListenAddr + ":" + strconv.Itoa(cfg.InternalServer.Port)
-	server := &http.Server{
-		Addr:    addr,
-		Handler: r,
-	}
-	logger.Infof("Server listening on %s", addr)
-	err := server.ListenAndServe()
+	// Generate tracing service instance
+	tracingSvc, err := tracing.New(cfgManager, logger)
+	// Check error
 	if err != nil {
-		logger.Fatalf("Unable to start http server: %v", err)
-		os.Exit(1)
+		logger.Fatal(err)
 	}
-}
+	// Prepare on reload hook
+	cfgManager.AddOnChangeHook(func() {
+		err = tracingSvc.Reload()
+		// Check error
+		if err != nil {
+			logger.Fatal(err)
+		}
+	})
 
-func serve(logger *logrus.Logger, cfg *config.Config, metricsCtx metrics.Instance) {
-	// Generate router
-	r, err := server.GenerateRouter(logger, cfg, metricsCtx)
+	// Create cachetHQ service
+	cachetHQCl := cachethq.NewInstance(cfgManager)
+	// Initialize
+	err = cachetHQCl.Initialize()
+	// Check error
 	if err != nil {
-		logger.Fatalf("Unable to setup http server: %v", err)
-		os.Exit(1)
+		logger.Fatal(err)
+	}
+	// Prepare on reload hook
+	cfgManager.AddOnChangeHook(func() {
+		err = cachetHQCl.Initialize()
+		// Check error
+		if err != nil {
+			logger.Fatal(err)
+		}
+	})
+
+	// Create signal handler service
+	signalHandlerSvc := signalhandler.NewClient(logger, true, []os.Signal{syscall.SIGTERM, syscall.SIGINT})
+	// Initialize service
+	err = signalHandlerSvc.Initialize()
+	// Check error
+	if err != nil {
+		logger.Fatal(err)
 	}
 
-	// Create server
-	addr := cfg.Server.ListenAddr + ":" + strconv.Itoa(cfg.Server.Port)
-	server := &http.Server{
-		Addr:    addr,
-		Handler: r,
-	}
-	logger.Infof("Server listening on %s", addr)
-	err = server.ListenAndServe()
+	// Create business services
+	busServices := business.NewServices(logger, cfgManager, metricsCl, cachetHQCl)
+
+	// Create servers
+	svr := server.NewServer(logger, cfgManager, metricsCl, tracingSvc, busServices, signalHandlerSvc)
+	intSvr := server.NewInternalServer(logger, cfgManager, metricsCl, signalHandlerSvc)
+
+	intSvr.AddChecker(&server.CheckerInput{
+		Name:     "cachetHQ",
+		CheckFn:  cachetHQCl.Ping,
+		Interval: time.Second,
+		Timeout:  time.Second,
+	})
+
+	// Generate server
+	err = svr.GenerateServer()
 	if err != nil {
-		logger.Fatalf("Unable to start http server: %v", err)
-		os.Exit(1)
+		logger.Fatal(err)
+	}
+	// Generate internal server
+	err = intSvr.GenerateServer()
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	var g errgroup.Group
+
+	g.Go(svr.Listen)
+	g.Go(intSvr.Listen)
+
+	if err := g.Wait(); err != nil {
+		logger.Fatal(err)
 	}
 }
