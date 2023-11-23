@@ -40,7 +40,7 @@ route:
   receivers:
   - name: cachethq-receiver
     webhook_configs:
-    - url: http://prometheus-cachet-domain:8080/prometheus/wehbook
+    - url: http://prometheus-cachet-domain:8080/prometheus/webhook
       send_resolved: true
 ```
 
